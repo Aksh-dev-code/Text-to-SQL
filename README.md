@@ -1,6 +1,10 @@
 # LLM Fine-Tuning with LoRA on Google Colab — Text-to-SQL
 
+[![Model on Hugging Face](https://img.shields.io/badge/🤗%20Hugging%20Face-Model-yellow)](https://huggingface.co/AkshAIML/tinyllama-sql-lora-adapter)
+
 Fine-tunes **TinyLlama-1.1B-Chat** with **LoRA** to turn `(table schema, question)` pairs into clean SQL queries, runnable end-to-end on a free Colab T4 GPU in under 15 minutes.
+
+**Trained adapter:** [huggingface.co/AkshAIML/tinyllama-sql-lora-adapter](https://huggingface.co/AkshAIML/tinyllama-sql-lora-adapter)
 
 The base model already "knows" SQL, but answers like a chatbot — explaining the query, wrapping it in markdown, adding commentary. This project isn't about teaching SQL syntax; it's about teaching a **response format**: one query, no fluff, ready to execute programmatically. LoRA is used instead of full fine-tuning because updating all 1.1B parameters isn't necessary for a format shift, and isn't feasible on 16GB of VRAM anyway.
 
@@ -9,6 +13,8 @@ The base model already "knows" SQL, but answers like a chatbot — explaining th
 | File | Description |
 |---|---|
 | `LLM_Fine_Tuning_with_LoRA_on_Google_Colab_for_Text_to_SQL_IMPROVED.ipynb` | The full notebook — run this top to bottom in Colab |
+
+> The trained LoRA adapter weights themselves are **not** stored in this repo — they're hosted on Hugging Face Hub (see below), which is the standard place for model weights rather than a git repo.
 
 ## Requirements
 
@@ -60,7 +66,13 @@ The workflow doesn't change, only the knobs:
 - Move to a larger base model (e.g. Qwen2.5-3B, or a 7B+ model with **QLoRA** 4-bit quantization to keep it fitting in T4 memory).
 - Add execution-based accuracy scoring alongside exact-match.
 
-## Loading the saved adapter later
+## Trained adapter on Hugging Face Hub
+
+The fine-tuned LoRA adapter is published at:
+
+**🤗 [huggingface.co/AkshAIML/tinyllama-sql-lora-adapter](https://huggingface.co/AkshAIML/tinyllama-sql-lora-adapter)**
+
+Load it directly — no need to re-run training or download anything manually:
 
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -72,6 +84,25 @@ base = AutoModelForCausalLM.from_pretrained(
     dtype=torch.float16,
     device_map="auto",
 )
+model = PeftModel.from_pretrained(base, "AkshAIML/tinyllama-sql-lora-adapter")
+tokenizer = AutoTokenizer.from_pretrained("AkshAIML/tinyllama-sql-lora-adapter")
+```
+
+### If you're running the notebook yourself and want to push your own copy
+
+At the end of the notebook (Section 9), after `model.save_pretrained(ADAPTER_DIR)`:
+
+```python
+from huggingface_hub import login
+login(token="hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxx")  # or use Colab Secrets (userdata.get)
+
+model.push_to_hub("AkshAIML/tinyllama-sql-lora-adapter")
+tokenizer.push_to_hub("AkshAIML/tinyllama-sql-lora-adapter")
+```
+
+### Loading from a local copy instead (if you didn't push to the Hub)
+
+```python
 model = PeftModel.from_pretrained(base, "./tinyllama-sql-lora-adapter")
 tokenizer = AutoTokenizer.from_pretrained("./tinyllama-sql-lora-adapter")
 ```
