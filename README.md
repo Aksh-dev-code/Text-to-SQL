@@ -1,6 +1,6 @@
 # LLM Fine-Tuning with LoRA on Google Colab — Text-to-SQL
 
-Fine-tunes **TinyLlama-1.1B-Chat** with **LoRA** to turn `(table schema, question)` pairs into clean SQL queries, runnable end-to-end on a free Colab T4 GPU in under 15 minut
+Fine-tunes **TinyLlama-1.1B-Chat** with **LoRA** to turn `(table schema, question)` pairs into clean SQL queries, runnable end-to-end on a free Colab T4 GPU in under 15 minutes.
 
 The base model already "knows" SQL, but answers like a chatbot — explaining the query, wrapping it in markdown, adding commentary. This project isn't about teaching SQL syntax; it's about teaching a **response format**: one query, no fluff, ready to execute programmatically. LoRA is used instead of full fine-tuning because updating all 1.1B parameters isn't necessary for a format shift, and isn't feasible on 16GB of VRAM anyway.
 
